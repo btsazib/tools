@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+
+.btn{
+  @apply px-6 py-3 border border-gray-300 cursor-pointer rounded-lg transition duration-300 text-lg font-medium bg-gray-100 hover:bg-gray-300 text-gray-700;
+}
