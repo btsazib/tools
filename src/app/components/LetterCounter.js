@@ -17,22 +17,118 @@ export default function LetterCounter() {
   const letterCount = text.length;
 
   const limits = [
-    { name: "Meta Title", type: "Letter", limit: 55, condition: "max", platform: "Meta" },
-    { name: "Meta Description", type: "Letter", limit: 160, condition: "max", platform: "Meta" },
-    { name: "Google Ideal Post Content", type: "Word", limit: 300, condition: "min", platform: "Google" },
-    { name: "Instagram Captions/Comments", type: "Letter", limit: 2200, condition: "max", platform: "Instagram" },
-    { name: "Twitter Post", type: "Letter", limit: 280, condition: "max", platform: "Twitter" },
-    { name: "Twitter Username", type: "Letter", limit: 20, condition: "max", platform: "Twitter" },
-    { name: "Facebook Wall Post (Truncation)", type: "Letter", limit: 477, condition: "max", platform: "Facebook" },
-    { name: "Facebook Wall Post (All)", type: "Letter", limit: 63206, condition: "max", platform: "Facebook" },
-    { name: "Facebook Comment", type: "Letter", limit: 8000, condition: "max", platform: "Facebook" },
-    { name: "Facebook Page Description", type: "Letter", limit: 255, condition: "max", platform: "Facebook" },
-    { name: "Facebook Username", type: "Letter", limit: 50, condition: "max", platform: "Facebook" },
-    { name: "Facebook Messenger Message", type: "Letter", limit: 20000, condition: "max", platform: "Facebook" },
-    { name: "YouTube Video Title", type: "Letter", limit: 70, condition: "max", platform: "YouTube" },
-    { name: "YouTube Video Description", type: "Letter", limit: 5000, condition: "max", platform: "YouTube" },
-    { name: "Snapchat Caption", type: "Letter", limit: 250, condition: "max", platform: "Snapchat" },
-    { name: "Pinterest Pin Description", type: "Letter", limit: 500, condition: "max", platform: "Pinterest" },
+    {
+      name: "Meta Title",
+      type: "Letter",
+      limit: 55,
+      condition: "max",
+      platform: "Meta",
+    },
+    {
+      name: "Meta Description",
+      type: "Letter",
+      limit: 160,
+      condition: "max",
+      platform: "Meta",
+    },
+    {
+      name: "Google Ideal Post Content",
+      type: "Word",
+      limit: 300,
+      condition: "min",
+      platform: "Google",
+    },
+    {
+      name: "Instagram Captions/Comments",
+      type: "Letter",
+      limit: 2200,
+      condition: "max",
+      platform: "Instagram",
+    },
+    {
+      name: "Twitter Post",
+      type: "Letter",
+      limit: 280,
+      condition: "max",
+      platform: "Twitter",
+    },
+    {
+      name: "Twitter Username",
+      type: "Letter",
+      limit: 20,
+      condition: "max",
+      platform: "Twitter",
+    },
+    {
+      name: "Facebook Wall Post (Truncation)",
+      type: "Letter",
+      limit: 477,
+      condition: "max",
+      platform: "Facebook",
+    },
+    {
+      name: "Facebook Wall Post (All)",
+      type: "Letter",
+      limit: 63206,
+      condition: "max",
+      platform: "Facebook",
+    },
+    {
+      name: "Facebook Comment",
+      type: "Letter",
+      limit: 8000,
+      condition: "max",
+      platform: "Facebook",
+    },
+    {
+      name: "Facebook Page Description",
+      type: "Letter",
+      limit: 255,
+      condition: "max",
+      platform: "Facebook",
+    },
+    {
+      name: "Facebook Username",
+      type: "Letter",
+      limit: 50,
+      condition: "max",
+      platform: "Facebook",
+    },
+    {
+      name: "Facebook Messenger Message",
+      type: "Letter",
+      limit: 20000,
+      condition: "max",
+      platform: "Facebook",
+    },
+    {
+      name: "YouTube Video Title",
+      type: "Letter",
+      limit: 70,
+      condition: "max",
+      platform: "YouTube",
+    },
+    {
+      name: "YouTube Video Description",
+      type: "Letter",
+      limit: 5000,
+      condition: "max",
+      platform: "YouTube",
+    },
+    {
+      name: "Snapchat Caption",
+      type: "Letter",
+      limit: 250,
+      condition: "max",
+      platform: "Snapchat",
+    },
+    {
+      name: "Pinterest Pin Description",
+      type: "Letter",
+      limit: 500,
+      condition: "max",
+      platform: "Pinterest",
+    },
   ];
 
   const filteredLimits =
@@ -93,37 +189,59 @@ export default function LetterCounter() {
               <thead className="bg-gray-100">
                 <tr className="text-gray-700">
                   <th className="px-4 py-3 border-b border-gray-300">Name</th>
-                  <th className="px-4 py-3 border-b border-gray-300">Min/Max</th>
+                  <th className="px-4 py-3 border-b border-gray-300">
+                    Min/Max
+                  </th>
                   <th className="px-4 py-3 border-b border-gray-300">Limit</th>
                   <th className="px-4 py-3 border-b border-gray-300">Type</th>
-                  <th className="px-4 py-3 border-b border-gray-300">Current Status</th>
+                  <th className="px-4 py-3 border-b border-gray-300">
+                    Current Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredLimits.map((item, idx) => {
-                  const currentValue = item.type === "Word" ? wordCount : letterCount;
+                  const currentValue =
+                    item.type === "Word" ? wordCount : letterCount;
                   const passed =
                     item.condition === "max"
                       ? currentValue <= item.limit
                       : currentValue >= item.limit;
 
                   return (
-                    <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                      <td className="px-4 py-2 border-b border-gray-300">{item.name}</td>
+                    <tr
+                      key={idx}
+                      className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                    >
+                      <td className="px-4 py-2 border-b border-gray-300">
+                        {item.name}
+                      </td>
                       <td className="px-4 py-2 border-b border-gray-300 capitalize">
                         {item.condition}
                       </td>
-                      <td className="px-4 py-2 border-b border-gray-300">{item.limit}</td>
-                      <td className="px-4 py-2 border-b border-gray-300">{item.type}</td>
                       <td className="px-4 py-2 border-b border-gray-300">
-                        <div
-                          className={`flex items-center gap-2 font-medium ${
-                            passed ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
-                          <i className={`bx ${passed ? "bxs-check-circle" : "bxs-x-circle"}`}></i>
-                          {passed ? "Pass" : "Fail"}
-                        </div>
+                        {item.limit}
+                      </td>
+                      <td className="px-4 py-2 border-b border-gray-300">
+                        {item.type}
+                      </td>
+                      <td className={`px-4 py-2 border-b border-gray-300 ${letterCount === 0 ? "text-gray-600 font-medium" : ""}`}>
+                        {letterCount === 0 ? (
+                          "Empty"
+                        ) : (
+                          <div
+                            className={`flex items-center gap-2 font-medium ${
+                              passed ? "text-green-600" : "text-red-600"
+                            }`}
+                          >
+                            <i
+                              className={`bx ${
+                                passed ? "bxs-check-circle" : "bxs-x-circle"
+                              }`}
+                            ></i>
+                            {passed ? "Pass" : "Fail"}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
