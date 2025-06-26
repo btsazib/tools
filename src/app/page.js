@@ -1,5 +1,7 @@
 import CaseConverter from "./components/CaseConverter";
+import ImageCropper from "./components/ImageCropper";
 import LetterCounter from "./components/LetterCounter";
+import LoremIpsumGenerator from "./components/LoremIpsumGenerator";
 import MultipleWhitespaceRemover from "./components/MultipleWhitespaceRemover";
 
 export default function Home() {
@@ -11,6 +13,10 @@ export default function Home() {
         <LetterCounter />
         <br />
         <MultipleWhitespaceRemover />
+        <br />
+        <LoremIpsumGenerator />
+        <br />
+        <ImageCropper />
         <br />
       </main>
     </>
