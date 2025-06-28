@@ -19,7 +19,7 @@ export default function Home() {
         <br />
         <ImageCropper />
         <br />
-        {/* <ImageCaptionGenerator /> */}
+        <ImageCaptionGenerator />
         <br />
       </main>
     </>
