@@ -1,27 +1,31 @@
-import CaseConverter from "./components/CaseConverter";
-import ImageCaptionGenerator from "./components/ImageCaptionGenerator";
-import ImageCropper from "./components/ImageCropper";
-import LetterCounter from "./components/LetterCounter";
-import LoremIpsumGenerator from "./components/LoremIpsumGenerator";
-import MultipleWhitespaceRemover from "./components/MultipleWhitespaceRemover";
+// app/page.js  (Server Component by default)
 
-export default function Home() {
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]/route";
+import LoginButton from "./components/LoginButton";
+import UserInfo from "./components/UserInfo";
+import Tools from "./tools/page";
+
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+
   return (
-    <>
-      <main className="bg-gray-50">
-        <CaseConverter />
-        <br />
-        <LetterCounter />
-        <br />
-        <MultipleWhitespaceRemover />
-        <br />
-        <LoremIpsumGenerator />
-        <br />
-        <ImageCropper />
-        <br />
-        <ImageCaptionGenerator />
-        <br />
-      </main>
-    </>
+    <main className="container mx-auto py-20">
+      <div className="flex justify-between items-center mb-10">
+        <h1>NextAuth.js Google Login</h1>
+        <div className="flex items-center gap-2">
+          <LoginButton />
+          <UserInfo />
+        </div>
+      </div>
+
+      {session ? (
+        <Tools />
+      ) : (
+        <p className="text-center mt-10 text-red-600">
+          Please login to access the tools.
+        </p>
+      )}
+    </main>
   );
 }

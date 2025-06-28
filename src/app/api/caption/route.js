@@ -19,7 +19,7 @@ export async function POST(req) {
 
   try {
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large',
+      'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base',
       {
         method: 'POST',
         headers: {
