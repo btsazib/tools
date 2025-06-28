@@ -3,7 +3,16 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
-import { Upload, RotateCw, Download, RefreshCw, ZoomIn, ZoomOut, Loader2 } from "lucide-react";
+import {
+  Upload,
+  RotateCw,
+  Download,
+  RefreshCw,
+  ZoomIn,
+  ZoomOut,
+  Loader2,
+} from "lucide-react";
+import CustomSelect from "./CustomSelect"; // Adjust the path based on your file structure
 
 function ImageCropper() {
   const inputRef = useRef(null);
@@ -17,6 +26,113 @@ function ImageCropper() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isCropperLoading, setIsCropperLoading] = useState(false);
+
+  // Aspect ratios for reference
+  const aspectRatios = [
+    { value: "", label: "Free Selection", ratio: null, exampleSize: null },
+    {
+      value: "1",
+      label: "Square (Instagram / Product)",
+      ratio: "1:1",
+      exampleSize: [1080, 1080],
+    },
+    {
+      value: "1.5",
+      label: "Classic Photo (DSLR / Landscape)",
+      ratio: "3:2",
+      exampleSize: [1500, 1000],
+    },
+    {
+      value: "1.333",
+      label: "Standard (Monitor / Gallery)",
+      ratio: "4:3",
+      exampleSize: [1200, 900],
+    },
+    {
+      value: "1.25",
+      label: "Frame Print",
+      ratio: "5:4",
+      exampleSize: [1250, 1000],
+    },
+    {
+      value: "1.777",
+      label: "Widescreen (YouTube / Twitter)",
+      ratio: "16:9",
+      exampleSize: [1920, 1080],
+    },
+    {
+      value: "1.91",
+      label: "Social Post (Facebook / Twitter)",
+      ratio: "1.91:1",
+      exampleSize: [1200, 628],
+    },
+    {
+      value: "2.63",
+      label: "Facebook Cover",
+      ratio: "2.63:1",
+      exampleSize: [820, 312],
+    },
+    {
+      value: "3",
+      label: "Wide Web Banner",
+      ratio: "3:1",
+      exampleSize: [1920, 640],
+    },
+    {
+      value: "4",
+      label: "Ultra Wide Banner",
+      ratio: "4:1",
+      exampleSize: [1920, 480],
+    },
+    {
+      value: "0.8",
+      label: "Instagram Portrait",
+      ratio: "4:5",
+      exampleSize: [1080, 1350],
+    },
+    {
+      value: "0.75",
+      label: "Passport Size (3.5×4.5 cm)",
+      ratio: "3:4",
+      exampleSize: [413, 531],
+    },
+    {
+      value: "0.85",
+      label: "Stamp Size (2.5×3 cm)",
+      ratio: "~0.85",
+      exampleSize: [295, 354],
+    },
+    {
+      value: "0.5625",
+      label: "Mobile Story (Reel / Shorts)",
+      ratio: "9:16",
+      exampleSize: [1080, 1920],
+    },
+    {
+      value: "0.4615",
+      label: "Splash Screen (iPhone X)",
+      ratio: "9:19.5",
+      exampleSize: [1242, 2688],
+    },
+    {
+      value: "1.414",
+      label: "A-Series (A4, A3)",
+      ratio: "1.414:1",
+      exampleSize: [2100, 2970],
+    },
+    {
+      value: "2.4",
+      label: "Cinematic (Movie Screen)",
+      ratio: "2.4:1",
+      exampleSize: [2400, 1000],
+    },
+    {
+      value: "1.618",
+      label: "Golden Ratio (Aesthetic)",
+      ratio: "1.618:1",
+      exampleSize: [1618, 1000],
+    },
+  ];
 
   // Handle image upload with loading effect
   const handleImageChange = (e) => {
@@ -52,12 +168,32 @@ function ImageCropper() {
     const cropBox = cropper.getCropBoxData();
     setCropSize({ width: cropBox.width, height: cropBox.height });
 
-    // Generate real-time preview with transparency for out-of-bounds areas
+    const selectedRatio = aspectRatios.find(
+      (opt) => opt.value === (aspect || "").toString()
+    );
+
+    const imageData = cropper.getImageData();
+    const canvasData = cropper.getCanvasData();
+    const cropBoxData = cropper.getCropBoxData();
+
+    // Scale the crop box back to original image size
+    const scaleX = imageData.naturalWidth / canvasData.width;
+    const scaleY = imageData.naturalHeight / canvasData.height;
+
+    let targetWidth = cropBoxData.width * scaleX;
+    let targetHeight = cropBoxData.height * scaleY;
+
+    // If fixed exampleSize exists, use that instead
+    if (selectedRatio?.exampleSize) {
+      [targetWidth, targetHeight] = selectedRatio.exampleSize;
+    }
+
     const canvas = cropper.getCroppedCanvas({
-      width: cropBox.width,
-      height: cropBox.height,
+      width: targetWidth,
+      height: targetHeight,
       fillColor: "transparent",
     });
+
     canvas.toBlob(
       (blob) => {
         if (blob) {
@@ -68,7 +204,7 @@ function ImageCropper() {
       "image/png",
       1.0
     );
-  }, [isCropperLoading]);
+  }, [isCropperLoading, aspect]);
 
   // Handle aspect ratio change
   const handleAspectChange = (e) => {
@@ -106,9 +242,9 @@ function ImageCropper() {
       alert("Please adjust the crop area to generate a preview!");
       return;
     }
-    
+
     setIsDownloading(true);
-    
+
     const a = document.createElement("a");
     a.href = cropData;
     a.download = `cropped-image-${Date.now()}.png`;
@@ -144,7 +280,8 @@ function ImageCropper() {
           position: relative;
           width: 100%;
           height: 400px;
-          background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///+l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC') repeat;
+          background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///+l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC")
+            repeat;
           border: 1px solid #e5e7eb;
           border-radius: 0.5rem;
           overflow: hidden;
@@ -173,14 +310,37 @@ function ImageCropper() {
           opacity: 0.3;
         }
         @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
         }
         .pulse-animation {
           animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #888 #f1f1f1;
+        }
       `}</style>
-      
+
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Advanced Image Cropper
@@ -199,8 +359,12 @@ function ImageCropper() {
             <label className="flex items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-300">
               <div className="text-center">
                 <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2 group-hover:text-blue-500 transition-colors" />
-                <p className="text-gray-600">Click to upload image or drag and drop</p>
-                <p className="text-sm text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+                <p className="text-gray-600">
+                  Click to upload image or drag and drop
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  PNG, JPG, GIF up to 10MB
+                </p>
               </div>
               <input
                 ref={inputRef}
@@ -223,7 +387,9 @@ function ImageCropper() {
                   <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
                     <div className="text-center">
                       <Loader2 className="h-8 w-8 text-blue-500 animate-spin mx-auto mb-2" />
-                      <p className="text-gray-600 text-sm">Loading cropper...</p>
+                      <p className="text-gray-600 text-sm">
+                        Loading cropper...
+                      </p>
                     </div>
                   </div>
                 )}
@@ -237,8 +403,8 @@ function ImageCropper() {
                   ready={() => setIsCropperLoading(false)}
                   ref={cropperRef}
                   viewMode={0}
-                  minCropBoxWidth={0}
-                  minCropBoxHeight={0}
+                  minCropBoxWidth={50} // Increased minimum crop box size
+                  minCropBoxHeight={50}
                   background={true}
                   responsive={true}
                   autoCropArea={0.5}
@@ -262,7 +428,9 @@ function ImageCropper() {
                 >
                   <ZoomOut className="h-4 w-4" />
                 </button>
-                <span className="text-sm font-medium">{Math.round(zoom * 100)}%</span>
+                <span className="text-sm font-medium">
+                  {Math.round(zoom * 100)}%
+                </span>
                 <input
                   type="range"
                   min="0.5"
@@ -286,7 +454,9 @@ function ImageCropper() {
               {/* Real-time Preview */}
               {cropData && (
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Live Preview</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Live Preview
+                  </h4>
                   <div className="flex justify-center">
                     <img
                       src={cropData}
@@ -296,25 +466,17 @@ function ImageCropper() {
                     />
                   </div>
                   <p className="text-center text-sm text-gray-600 mt-2">
-                    Size: {Math.round(cropSize.width)} × {Math.round(cropSize.height)} pixels
+                    Size: {Math.round(cropSize.width)} ×{" "}
+                    {Math.round(cropSize.height)} pixels
                   </p>
                 </div>
               )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Aspect Ratio</label>
-                <select
-                  onChange={handleAspectChange}
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={aspect || ""}
-                >
-                  <option value="">Free Selection</option>
-                  <option value="1">1:1 (Square)</option>
-                  <option value="1.777">16:9 (Widescreen)</option>
-                  <option value="1.333">4:3 (Standard)</option>
-                  <option value="0.75">3:4 (Portrait)</option>
-                </select>
-              </div>
+              {/* Custom Select Component */}
+              <CustomSelect
+                value={aspect || ""}
+                onChange={handleAspectChange}
+              />
 
               <div className="space-y-2">
                 <button

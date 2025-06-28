@@ -1,4 +1,5 @@
 import CaseConverter from "./components/CaseConverter";
+import ImageCaptionGenerator from "./components/ImageCaptionGenerator";
 import ImageCropper from "./components/ImageCropper";
 import LetterCounter from "./components/LetterCounter";
 import LoremIpsumGenerator from "./components/LoremIpsumGenerator";
@@ -17,6 +18,8 @@ export default function Home() {
         <LoremIpsumGenerator />
         <br />
         <ImageCropper />
+        <br />
+        {/* <ImageCaptionGenerator /> */}
         <br />
       </main>
     </>
