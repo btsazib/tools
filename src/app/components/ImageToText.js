@@ -1,87 +1,121 @@
 'use client';
 
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, Copy, Download, RotateCcw, Sparkles, Eye, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
-// Load Tesseract.js for OCR
-const loadTesseract = () => {
-  return new Promise((resolve) => {
-    if (window.Tesseract) {
-      resolve(window.Tesseract);
-      return;
-    }
-    
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js';
-    script.onload = () => resolve(window.Tesseract);
-    document.head.appendChild(script);
-  });
-};
-
-function ImageToText() {
+const ImageToText = () => {
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imageInfo, setImageInfo] = useState({ name: '', type: '', size: '' });
   const [extractedText, setExtractedText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState('');
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
 
-  // Real OCR processing using Tesseract.js
+  // Preload Tesseract when component mounts
+  useEffect(() => {
+    const loadTesseract = async () => {
+      if (!window.Tesseract) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js';
+        document.head.appendChild(script);
+      }
+    };
+    loadTesseract();
+  }, []);
+
+  const compressImage = async (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(resolve, file.type, 0.7);
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const performOCR = async (imageFile) => {
     setIsProcessing(true);
     setError('');
-    
+    setProgress(0);
+
     try {
-      // Load Tesseract.js
-      const Tesseract = await loadTesseract();
-      
-      // Create image URL for processing
-      const imageUrl = URL.createObjectURL(imageFile);
-      
-      // Perform OCR with progress tracking
+      const Tesseract = window.Tesseract;
+      const compressedFile = await compressImage(imageFile);
+      const imageUrl = URL.createObjectURL(compressedFile);
+
       const { data: { text } } = await Tesseract.recognize(
         imageUrl,
-        'eng+ben', // English + Bengali support
+        'eng+ben+hin',
         {
           logger: m => {
             if (m.status === 'recognizing text') {
-              // You can add progress indicator here if needed
-              console.log(`Progress: ${Math.round(m.progress * 100)}%`);
+              setProgress(Math.round(m.progress * 100));
             }
-          }
+          },
+          workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/worker.min.js',
+          corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@4.0.2/tesseract-core.wasm.js'
         }
       );
-      
-      // Clean up URL
+
       URL.revokeObjectURL(imageUrl);
-      
       if (text.trim()) {
         setExtractedText(text.trim());
       } else {
-        setExtractedText('No text found in the image. Please try with a clearer image.');
+        setError("Sorry, we couldn't find any text in this image. Try using a clearer image with visible text.");
       }
-      
     } catch (err) {
       console.error('OCR Error:', err);
-      setError('Failed to extract text from image. Please try again with a clearer image.');
+      setError('Failed to extract text. Please try again with a clearer image.');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleFileSelect = (file) => {
+  const handleFileSelect = async (file) => {
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target.result);
-        performOCR(file);
+        setImageInfo({
+          name: file.name,
+          type: file.type.split('/')[1].toUpperCase(),
+          size: (file.size / 1024).toFixed(2) + ' KB'
+        });
       };
       reader.readAsDataURL(file);
+      await performOCR(file);
       setError('');
     } else {
-      setError('Please select a valid image file (PNG, JPG, JPEG, GIF)');
+      setError('Please select a valid image file (PNG, JPG, JPEG, WEBP)');
     }
   };
 
@@ -134,12 +168,23 @@ function ImageToText() {
   };
 
   const downloadAsDoc = () => {
-    const docContent = `<!DOCTYPE html>
-    <html>
-    <head><meta charset="utf-8"><title>Extracted Text</title></head>
-    <body><pre>${extractedText}</pre></body>
-    </html>`;
-    const blob = new Blob([docContent], { type: 'application/msword' });
+    const html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+            xmlns:w="urn:schemas-microsoft-com:office:word" 
+            xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="utf-8">
+        <title>Extracted Text</title>
+      </head>
+      <body>
+        <div>${extractedText.replace(/\n/g, '</div><div>')}</div>
+      </body>
+      </html>
+    `;
+    
+    const blob = new Blob(['\ufeff', html], { 
+      type: 'application/msword' 
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -156,6 +201,8 @@ function ImageToText() {
     setIsProcessing(false);
     setError('');
     setCopySuccess(false);
+    setImageInfo({ name: '', type: '', size: '' });
+    setProgress(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -202,7 +249,7 @@ function ImageToText() {
                   Upload your image to extract text
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  Supports PNG, JPG, JPEG, GIF • English & Bengali text recognition
+                  Supports PNG, JPG, JPEG, WEBP • Auto-detects text in multiple languages
                 </p>
                 <input
                   ref={fileInputRef}
@@ -242,18 +289,24 @@ function ImageToText() {
                   </div>
                   <div className="relative">
                     {selectedImage && (
-                      <img
-                        src={selectedImage}
-                        alt="Selected"
-                        className="w-full h-80 object-contain bg-gray-50 rounded-xl border border-gray-200"
-                      />
+                      <>
+                        <img
+                          src={selectedImage}
+                          alt="Selected"
+                          className="w-full h-80 object-contain bg-gray-50 rounded-xl border border-gray-200"
+                        />
+                        <div className="mt-2 text-sm text-gray-500">
+                          <p>File: {imageInfo.name}</p>
+                          <p>Type: {imageInfo.type} • Size: {imageInfo.size}</p>
+                        </div>
+                      </>
                     )}
                     {isProcessing && (
                       <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-xl">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-2" />
-                          <p className="text-gray-600 font-medium">Extracting text from image...</p>
-                          <p className="text-gray-500 text-sm mt-1">This may take a few seconds</p>
+                          <p className="text-gray-600 font-medium">Extracting text... {progress}%</p>
+                          <p className="text-gray-500 text-sm mt-1">Processing may take 10-30 seconds</p>
                         </div>
                       </div>
                     )}
@@ -305,7 +358,7 @@ function ImageToText() {
                         <Download className="w-4 h-4" />
                         <span>Download TXT</span>
                       </button>
-                      
+
                       <button
                         onClick={downloadAsDoc}
                         className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
@@ -345,8 +398,8 @@ function ImageToText() {
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                   <Sparkles className="w-6 h-6 text-blue-600" />
                 </div>
-                <h3 className="font-semibold text-gray-800 mb-2">AI-Powered OCR</h3>
-                <p className="text-gray-600">Advanced machine learning algorithms for accurate text recognition</p>
+                <h3 className="font-semibold text-gray-800 mb-2">Fast Processing</h3>
+                <p className="text-gray-600">Optimized OCR engine with image compression for faster results</p>
               </div>
               
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
@@ -354,15 +407,15 @@ function ImageToText() {
                   <FileText className="w-6 h-6 text-green-600" />
                 </div>
                 <h3 className="font-semibold text-gray-800 mb-2">Multiple Formats</h3>
-                <p className="text-gray-600">Export your extracted text as TXT, DOC, or copy to clipboard</p>
+                <p className="text-gray-600">Download extracted text as TXT or DOC files</p>
               </div>
               
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <Upload className="w-6 h-6 text-purple-600" />
                 </div>
-                <h3 className="font-semibold text-gray-800 mb-2">Easy Upload</h3>
-                <p className="text-gray-600">Drag & drop or click to upload images in various formats</p>
+                <h3 className="font-semibold text-gray-800 mb-2">Multi-language</h3>
+                <p className="text-gray-600">Supports English, Bengali, Hindi and more</p>
               </div>
             </div>
           </div>
@@ -370,6 +423,6 @@ function ImageToText() {
       </div>
     </div>
   );
-}
+};
 
 export default ImageToText;

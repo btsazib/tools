@@ -9,6 +9,7 @@ import LetterCounter from "../components/LetterCounter";
 import LoremIpsumGenerator from "../components/LoremIpsumGenerator";
 import MultipleWhitespaceRemover from "../components/MultipleWhitespaceRemover";
 import ImageToText from '../components/ImageToText';
+import MarkdownToHtmlConverter from '../components/MarkdownToHtmlConverter';
 
 export default async function Tools() {
   const session = await getServerSession(authOptions);
@@ -30,6 +31,8 @@ export default async function Tools() {
       <ImageCropper />
       <br />
       <ImageToText />
+      <br />
+      <MarkdownToHtmlConverter />
       <br />
     </div>
   );
