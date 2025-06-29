@@ -274,7 +274,7 @@ function ImageCropper() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
+    <div className="max-w-6xl mx-auto py-8 px-4 bg-gradient-to-br from-blue-50 to-purple-50 h-auto">
       <style jsx>{`
         .cropper-container {
           position: relative;

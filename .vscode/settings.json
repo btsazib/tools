@@ -1,0 +1,13 @@
+{
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "javascriptreact": "html",
+    "typescriptreact": "html"
+  },
+  "emmet.triggerExpansionOnTab": true
+}

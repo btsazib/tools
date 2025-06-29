@@ -4,11 +4,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 
 import CaseConverter from "../components/CaseConverter";
-import ImageCaptionGenerator from "../components/ImageCaptionGenerator";
 import ImageCropper from "../components/ImageCropper";
 import LetterCounter from "../components/LetterCounter";
 import LoremIpsumGenerator from "../components/LoremIpsumGenerator";
 import MultipleWhitespaceRemover from "../components/MultipleWhitespaceRemover";
+import ImageToText from '../components/ImageToText';
 
 export default async function Tools() {
   const session = await getServerSession(authOptions);
@@ -29,7 +29,7 @@ export default async function Tools() {
       <br />
       <ImageCropper />
       <br />
-      <ImageCaptionGenerator />
+      <ImageToText />
       <br />
     </div>
   );
