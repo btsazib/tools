@@ -10,6 +10,7 @@ import LoremIpsumGenerator from "../components/LoremIpsumGenerator";
 import MultipleWhitespaceRemover from "../components/MultipleWhitespaceRemover";
 import ImageToText from '../components/ImageToText';
 import MarkdownToHtmlConverter from '../components/MarkdownToHtmlConverter';
+import ImageCaption from '../components/ImageCaption';
 
 export default async function Tools() {
   const session = await getServerSession(authOptions);
@@ -34,6 +35,7 @@ export default async function Tools() {
       <br />
       <MarkdownToHtmlConverter />
       <br />
+      {/* <ImageCaption /> */}
     </div>
   );
 }

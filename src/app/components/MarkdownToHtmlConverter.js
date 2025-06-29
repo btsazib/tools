@@ -5,6 +5,7 @@ import { marked } from 'marked';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';
 import 'prismjs/components/prism-markup.min.js';
+import { Copy, Trash2 } from 'lucide-react';
 
 export default function Home() {
   const [markdown, setMarkdown] = useState(`# Welcome to Markdown Converter!
@@ -17,6 +18,7 @@ Type your markdown text here, or upload a .md file to get started.`);
 h1 { color: #4f46e5; }`);
   const [activeTab, setActiveTab] = useState('preview');
   const [rawHTML, setRawHTML] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
   const fileInputRef = useRef();
   const iframeRef = useRef();
 
@@ -57,6 +59,29 @@ h1 { color: #4f46e5; }`);
     link.click();
   };
 
+  const handleCopyHTML = async () => {
+    const fullHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>${customCSS}</style>
+</head>
+<body>${rawHTML}</body>
+</html>`;
+    try {
+      await navigator.clipboard.writeText(fullHTML);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleClearMarkdown = () => {
+    setMarkdown('');
+  };
+
   return (
     <main className="min-h-screen bg-gray-100 p-6 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-center text-indigo-700 mb-6">
@@ -65,14 +90,26 @@ h1 { color: #4f46e5; }`);
 
       <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <label className="block font-semibold mb-2">Markdown Input</label>
+          <div className="flex justify-between items-center mb-2">
+            <label className="font-semibold">Markdown Input</label>
+            <div className="flex gap-2">
+              <button
+                onClick={handleClearMarkdown}
+                className="flex items-center gap-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded"
+                title="Clear Markdown"
+              >
+                <Trash2 size={16} />
+                Clear
+              </button>
+            </div>
+          </div>
           <textarea
             className="w-full h-72 p-4 border border-gray-300 rounded font-mono text-sm"
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
           />
 
-          <div className="mt-4">
+          <div className="mt-4 flex gap-2">
             <label htmlFor="file-upload" className="inline-block bg-indigo-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-indigo-700">
               Upload .md File
             </label>
@@ -129,12 +166,22 @@ h1 { color: #4f46e5; }`);
             )}
           </div>
 
-          <button
-            onClick={handleDownload}
-            className="mt-4 bg-green-600 hover:bg-green-700 text-white py-2 rounded"
-          >
-            Download HTML File
-          </button>
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={handleCopyHTML}
+              className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded"
+            >
+              <Copy size={16} />
+              {copySuccess ? 'Copied!' : 'Copy HTML'}
+            </button>
+            <button
+              onClick={handleDownload}
+              className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+            >
+              <download size={16} />
+              Download HTML
+            </button>
+          </div>
         </div>
       </div>
     </main>
