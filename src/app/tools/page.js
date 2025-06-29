@@ -11,6 +11,7 @@ import MultipleWhitespaceRemover from "../components/MultipleWhitespaceRemover";
 import ImageToText from '../components/ImageToText';
 import MarkdownToHtmlConverter from '../components/MarkdownToHtmlConverter';
 import ImageCaption from '../components/ImageCaption';
+import PromptGenerator from '../components/PromptGenerator';
 
 export default async function Tools() {
   const session = await getServerSession(authOptions);
@@ -34,6 +35,8 @@ export default async function Tools() {
       <ImageToText />
       <br />
       <MarkdownToHtmlConverter />
+      <br />
+      {/* <PromptGenerator /> */}
       <br />
       {/* <ImageCaption /> */}
     </div>
